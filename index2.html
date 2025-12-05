@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awalyt - Reddit Subreddit Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(51, 57, 203, 0.08);
+        }
+
+        header h1 {
+            font-size: 32px;
+            color: #3339cb;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(51, 57, 203, 0.08);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            color: #3339cb;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .subreddit-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(51, 57, 203, 0.08);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee8ff;
+        }
+
+        .section-title h2 {
+            font-size: 22px;
+            color: #3339cb;
+            margin: 0;
+            flex: 1;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-critical {
+            background: #ffe8e8;
+            color: #d84747;
+        }
+
+        .priority-high {
+            background: #fff4e8;
+            color: #d97706;
+        }
+
+        .priority-medium {
+            background: #e8f4ff;
+            color: #1e88e5;
+        }
+
+        .subreddit-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .subreddit-card {
+            background: #f9f7ff;
+            border: 1px solid #eee8ff;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .subreddit-card:hover {
+            border-color: #3339cb;
+            box-shadow: 0 4px 12px rgba(51, 57, 203, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .subreddit-name {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .reddit-icon {
+            width: 24px;
+            height: 24px;
+            background: #FF4500;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .subreddit-name h3 {
+            font-size: 14px;
+            color: #3339cb;
+            margin: 0;
+        }
+
+        .subreddit-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee8ff;
+        }
+
+        .subreddit-details {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #3339cb;
+        }
+
+        .posts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(51, 57, 203, 0.08);
+        }
+
+        .posts-title {
+            font-size: 22px;
+            color: #3339cb;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee8ff;
+        }
+
+        .post-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .post-item {
+            background: #f9f7ff;
+            border-left: 4px solid #3339cb;
+            padding: 18px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .post-item:hover {
+            border-left-color: #7d53ff;
+            box-shadow: 0 4px 12px rgba(51, 57, 203, 0.1);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .post-subreddit {
+            font-size: 11px;
+            background: #eee8ff;
+            color: #3339cb;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .post-date {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .post-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .post-link {
+            color: #3339cb;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .post-link:hover {
+            text-decoration: underline;
+        }
+
+        .post-intent {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee8ff;
+        }
+
+        .intent-label {
+            font-weight: 600;
+            color: #3339cb;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee8ff;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #3339cb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2228a1;
+        }
+
+        .btn-secondary {
+            background: #eee8ff;
+            color: #3339cb;
+        }
+
+        .btn-secondary:hover {
+            background: #ddd3ff;
+        }
+
+        .action-note {
+            font-size: 11px;
+            color: #999;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .strategy-note {
+            background: #eee8ff;
+            border-left: 4px solid #3339cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .strategy-note strong {
+            color: #3339cb;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .subreddit-list {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <header>
+        <h1>🎯 Awalyt Reddit Strategy</h1>
+        <p>Tracking subreddit opportunities & strategic posts for Beta Testing</p>
+    </header>
+
+    <!-- STRATEGY NOTE -->
+    <div class="strategy-note">
+        <strong>📌 Strategic Focus:</strong> Questi subreddit e post rappresentano le opportunità chiave per acquisire betatesters qualificati (financial advisors e investitori esperti). Il focus è su qualità dei tester, non volume. Ogni subreddit ha un ruolo specifico nella strategia PLG di Awalyt.
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>5</h3>
+            <p>Subreddit Primari</p>
+        </div>
+        <div class="stat-card">
+            <h3>2</h3>
+            <p>Post Chiave Trovati</p>
+        </div>
+        <div class="stat-card">
+            <h3>30-50</h3>
+            <p>Target Tester</p>
+        </div>
+        <div class="stat-card">
+            <h3>3</h3>
+            <p>Mesi Beta</p>
+        </div>
+    </div>
+
+    <!-- SUBREDDIT PRIMARI -->
+    <div class="subreddit-section">
+        <div class="section-title">
+            <h2>🎯 Subreddit Primari</h2>
+            
+        </div>
+
+        <div class="subreddit-list">
+            <!-- r/CFP -->
+            <div class="subreddit-card">
+                <div class="subreddit-name">
+                    <div class="reddit-icon">r/</div>
+                    <h3><a href="https://www.reddit.com/r/CFP" target="_blank" rel="noopener noreferrer">r/CFP</a></h3>
+                </div>
+                <div class="subreddit-desc">
+                    Certified Financial Planners community — target esattamente il tuo target primario
+                </div>
+                <div class="subreddit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Audience:</span>
+                        <span>~50K CFP certificati</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Engagement:</span>
+                        <span>Altissimo</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Azione:</span>
+                        <span>Rispondere nel thread sui tool</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- r/FinancialCareers -->
+            <div class="subreddit-card">
+                <div class="subreddit-name">
+                    <div class="reddit-icon">r/</div>
+                    <h3><a href="https://www.reddit.com/r/FinancialCareers" target="_blank" rel="noopener noreferrer">r/FinancialCareers</a></h3>
+                </div>
+                <div class="subreddit-desc">
+                    Professionisti del settore finanziario e advisor in cerca di tool innovativi
+                </div>
+                <div class="subreddit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Audience:</span>
+                        <span>~300K professionisti</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Engagement:</span>
+                        <span>Medio-Alto</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Azione:</span>
+                        <span>Post recruitment beta</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- r/investing -->
+            <div class="subreddit-card">
+                <div class="subreddit-name">
+                    <div class="reddit-icon">r/</div>
+                    <h3><a href="https://www.reddit.com/r/investing" target="_blank" rel="noopener noreferrer">r/investing</a></h3>
+                </div>
+                <div class="subreddit-desc">
+                    Grande community con mix di advisor e investitori esperti monitoranti topic di analisi
+                </div>
+                <div class="subreddit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Audience:</span>
+                        <span>~3M (mix)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Engagement:</span>
+                        <span>Medio (competizione alta)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Azione:</span>
+                        <span>Post educational + recruitment</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- r/investing_discuss -->
+            <div class="subreddit-card">
+                <div class="subreddit-name">
+                    <div class="reddit-icon">r/</div>
+                    <h3><a href="https://www.reddit.com/r/investing_discussion" target="_blank" rel="noopener noreferrer">r/investing_discussion</a></h3>
+                </div>
+                <div class="subreddit-desc">
+                    Community più seria con discussioni su strumenti di analisi e backtesting
+                </div>
+                <div class="subreddit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Audience:</span>
+                        <span>~50K professionisti</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Engagement:</span>
+                        <span>Altissimo (quality)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Azione:</span>
+                        <span>Post technique + rispondere</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- r/personalfinance -->
+            <div class="subreddit-card">
+                <div class="subreddit-name">
+                    <div class="reddit-icon">r/</div>
+                    <h3><a href="https://www.reddit.com/r/personalfinance" target="_blank" rel="noopener noreferrer">r/personalfinance</a></h3>
+                </div>
+                <div class="subreddit-desc">
+                    Grande community con molti advisor professionali che cercano strumenti
+                </div>
+                <div class="subreddit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Audience:</span>
+                        <span>~1.7M (mix qualificato)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Engagement:</span>
+                        <span>Medio (stretto moderazione)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Azione:</span>
+                        <span>Post educational genuine</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POST CHIAVE -->
+    <div class="posts-section">
+        <h2 class="posts-title">📌 Post Strategici Identificati</h2>
+
+        <div class="post-list">
+            <!-- Post 1 -->
+            <div class="post-item">
+                <div class="post-header">
+                    <span class="post-subreddit">r/investing_discussion</span>
+                    <span class="post-date">Luglio 2025</span>
+                </div>
+                <div class="post-title">
+                    "Anyone found a decent portfolio analysis tool that doesn't cost a fortune?"
+                </div>
+                <div class="post-intent">
+                    <span class="intent-label">Intent:</span> Utenti cercano strumenti di analisi alternati a soluzioni costose. Pain point chiaro. Alto valore per recruitment.
+                </div>
+                <div class="action-buttons">
+                    <a href="https://www.reddit.com/r/investing_discussion/comments/1m0mwtb/anyone_found_a_decent_portfolio_analysis_tool/" class="btn btn-primary" target="_blank">Vai al Post</a>
+                    <button class="btn btn-secondary" onclick="copyText('Post 1: Rispondere con commento trasparente su Awalyt, senza link diretto.')">Strategia</button>
+                </div>
+                <div class="action-note">
+                    💡 Azione consigliata: Rispondere nel thread con il tuo account `/u/awalyt_dev`, spiegando che Awalyt risolve questo problema. Contattare in DM gli utenti interessati per beta.
+                </div>
+            </div>
+
+            <!-- Post 2 -->
+            <div class="post-item">
+                <div class="post-header">
+                    <span class="post-subreddit">r/CFP</span>
+                    <span class="post-date">Luglio 2025</span>
+                </div>
+                <div class="post-title">
+                    "Investment/Portfolio analysis software"
+                </div>
+                <div class="post-intent">
+                    <span class="intent-label">Intent:</span> Advisor certificati discutono tool professionali (Kwanti, Nitrogen, RightCapital). Discussione su quality, pricing, features. Super qualificato.
+                </div>
+                <div class="action-buttons">
+                    <a href="https://www.reddit.com/r/CFP/comments/1mbp7x4/investmentportfolio_analysis_software/" class="btn btn-primary" target="_blank">Vai al Post</a>
+                    <button class="btn btn-secondary" onclick="copyText('Post 2: Inserire in thread come alternativa innovativa con feedback sui pain points.')">Strategia</button>
+                </div>
+                <div class="action-note">
+                    💡 Azione consigliata: Commento trasparente, rispondere a domande, proporre beta in modo professionale. Target qualità altissima.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STRATEGIA DI UTILIZZO -->
+    <div class="subreddit-section" style="margin-top: 30px;">
+        <div class="section-title">
+            <h2>📋 Piano di Utilizzo Integrato</h2>
+        </div>
+
+        <div style="background: #f9f7ff; padding: 20px; border-radius: 8px; line-height: 1.6; color: #333; font-size: 13px;">
+            <h3 style="color: #3339cb; margin-bottom: 12px;">Fase 1 - Build Credibility (Settimana 1-2):</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li>Crea `/u/awalyt_dev` e partecipa attivamente in <strong>r/CFP</strong> e <strong>r/investing_discussion</strong></li>
+                <li>Rispondi a domande su backtesting, simulazione fiscale, analisi portafoglio</li>
+                <li>Post educational: "Backtesting giornaliero vs mensile: qual è il vostro approccio?"</li>
+            </ul>
+
+            <h3 style="color: #3339cb; margin-bottom: 12px;">Fase 2 - Soft Recruitment (Settimana 2-3):</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>r/CFP:</strong> Commento nel post su software con approccio trasparente</li>
+                <li><strong>r/investing_discussion:</strong> Rispondi nel post sui tool con soluzione Awalyt</li>
+                <li><strong>r/FinancialCareers:</strong> Post: "Cerchiamo financial advisors per beta testing"</li>
+            </ul>
+
+            <h3 style="color: #3339cb; margin-bottom: 12px;">Fase 3 - Full Launch (Settimana 3-4):</h3>
+            <ul style="margin-left: 20px;">
+                <li><strong>r/investing_discussion:</strong> Post AMA se feedback positivo</li>
+                <li><strong>r/personalfinance:</strong> Post educational + accenno a beta</li>
+                <li><strong>r/investing:</strong> Post educato con soft call-to-action</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✓ Copiato negli appunti!');
+    });
+}
+</script>
+
+</body>
+</html>
